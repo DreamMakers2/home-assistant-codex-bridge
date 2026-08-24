@@ -1,0 +1,8 @@
+/homeassistant/automations.yaml
+/homeassistant/scripts.yaml
+/homeassistant/scenes.yaml
+/homeassistant/themes.yaml
+/homeassistant/themes/**
+/homeassistant/packages/codex/**
+/homeassistant/esphome/*.yaml
+/homeassistant/esphome/**/*.yaml

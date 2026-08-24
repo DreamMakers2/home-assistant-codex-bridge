@@ -1,0 +1,5 @@
+/homeassistant/configuration.yaml
+/homeassistant/packages/**
+/homeassistant/custom_components/**
+/homeassistant/www/community/**
+/homeassistant/home-assistant.log*

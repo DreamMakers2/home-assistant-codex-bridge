@@ -1,0 +1,76 @@
+# Codex exec-policy rules for a Home Assistant workspace.
+# Install as ~/.codex/rules/homeassistant.rules
+#
+# Re-check rule syntax against the Codex CLI version you are running.
+
+prefix_rule(
+    pattern = ["sudo"],
+    decision = "forbidden",
+    justification = "Codex must never obtain root privileges.",
+)
+
+prefix_rule(
+    pattern = ["su"],
+    decision = "forbidden",
+    justification = "Codex must never switch users or obtain root privileges.",
+)
+
+prefix_rule(
+    pattern = ["pkexec"],
+    decision = "forbidden",
+    justification = "Codex must never obtain elevated privileges.",
+)
+
+prefix_rule(
+    pattern = ["doas"],
+    decision = "forbidden",
+    justification = "Codex must never obtain elevated privileges.",
+)
+
+prefix_rule(
+    pattern = ["ssh"],
+    decision = "forbidden",
+    justification = "Use the restricted Home Assistant bridge and Playwright instead of SSH.",
+)
+
+prefix_rule(
+    pattern = ["scp"],
+    decision = "forbidden",
+    justification = "Use ha-sync instead of SCP.",
+)
+
+prefix_rule(
+    pattern = ["sftp"],
+    decision = "forbidden",
+    justification = "Use ha-sync instead of SFTP.",
+)
+
+prefix_rule(
+    pattern = ["mount"],
+    decision = "forbidden",
+    justification = "Filesystem mounting is outside Codex's permitted scope.",
+)
+
+prefix_rule(
+    pattern = ["umount"],
+    decision = "forbidden",
+    justification = "Filesystem mounting is outside Codex's permitted scope.",
+)
+
+prefix_rule(
+    pattern = ["docker"],
+    decision = "forbidden",
+    justification = "Container/host control is outside Codex's permitted scope.",
+)
+
+prefix_rule(
+    pattern = ["podman"],
+    decision = "forbidden",
+    justification = "Container/host control is outside Codex's permitted scope.",
+)
+
+prefix_rule(
+    pattern = ["ha-sync"],
+    decision = "allow",
+    justification = "ha-sync is the approved restricted Home Assistant file interface.",
+)

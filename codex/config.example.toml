@@ -1,0 +1,48 @@
+# Relevant Home Assistant permission-profile sections for ~/.codex/config.toml
+#
+# IMPORTANT:
+# - default_permissions MUST be a top-level key before any [section].
+# - Merge this with existing Codex config; do not overwrite unrelated MCP/model settings.
+# - Do NOT blanket-deny ~/.codex if the Codex executable is installed beneath it.
+# - Re-check Codex permission syntax against the version you are actually running.
+
+default_permissions = "homeassistant"
+
+[permissions.homeassistant]
+description = "Home Assistant development with restricted host access"
+extends = ":workspace"
+
+[permissions.homeassistant.filesystem]
+glob_scan_max_depth = 8
+
+# Host/user credential and session material.
+"~/.codex/auth.json" = "deny"
+"~/.ssh" = "deny"
+"~/.gnupg" = "deny"
+"~/.config/codex-ha/browser-profile" = "deny"
+"~/.config/codex-ha/openai.env" = "deny"
+
+# Narrow files required by the approved bridge helper.
+# The bridge env contains a low-privilege bridge token. The HA-side bridge
+# independently enforces its path policy.
+"~/bin/ha-sync" = "read"
+"~/.config/codex-ha/env" = "read"
+"~/.config/codex-ha/bridge-ca.crt" = "read"
+
+[permissions.homeassistant.filesystem.":workspace_roots"]
+"." = "write"
+
+# Local Git commits are part of the normal workflow.
+".git" = "write"
+
+# Secret-bearing workspace paths stay denied.
+"**/secrets.yaml" = "deny"
+"**/.env" = "deny"
+"**/.env.*" = "deny"
+"**/*.key" = "deny"
+"**/*.pem" = "deny"
+"**/*.p12" = "deny"
+"**/*.pfx" = "deny"
+
+[permissions.homeassistant.network]
+enabled = true

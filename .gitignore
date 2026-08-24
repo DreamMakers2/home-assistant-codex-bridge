@@ -1,0 +1,43 @@
+# Secrets and credentials
+*secrets.yaml
+SECRET_NAMES.md
+**/SECRET_NAMES.md
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.token
+*.env
+.env*
+.npmrc
+.pypirc
+CODEX_TOKEN_TEMP.txt
+auth.json
+
+# Codex / browser / local client state
+.codex/
+.config/codex-ha/
+.playwright-mcp/
+browser-profile/
+
+# Home Assistant runtime/state
+.storage/
+**/.storage/**
+*.db
+*.db-*
+*.db-shm
+*.db-wal
+home-assistant.log*
+*.log
+*.log.*
+backups/
+backup/
+
+# Editor/OS/runtime noise
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

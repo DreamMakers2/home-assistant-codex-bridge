@@ -1,0 +1,7 @@
+**/secrets.yaml
+/homeassistant/.storage/**
+/homeassistant/*.db*
+/homeassistant/backups/**
+**/.ssh/**
+**/*.key
+**/*.pem

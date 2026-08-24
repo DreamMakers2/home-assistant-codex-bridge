@@ -1,0 +1,29 @@
+name: "Home Assistant Codex Bridge"
+version: "0.2.0"
+slug: "codex_file_bridge"
+description: "Restricted HTTPS file access for a Codex Home Assistant workspace"
+arch:
+  - amd64
+  - aarch64
+
+ports:
+  8443/tcp: 8443
+ports_description:
+  8443/tcp: "Home Assistant Codex Bridge HTTPS"
+
+map:
+  - type: homeassistant_config
+    read_only: false
+    path: /homeassistant
+
+options:
+  tls_san_ip: ""
+  tls_san_dns: "homeassistant,homeassistant.local"
+schema:
+  api_token: password
+  tls_san_ip: str
+  tls_san_dns: str
+
+startup: application
+boot: auto
+init: false
