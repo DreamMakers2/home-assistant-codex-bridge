@@ -36,11 +36,67 @@ The project combines:
 
 ## Architecture
 
-![Home Assistant Codex Bridge least-privilege architecture](docs/architecture.svg)
+```mermaid
+flowchart LR
+    OpenAI["OpenAI services<br/>Internet"]
+
+    subgraph VM["1 · Isolated Ubuntu Codex VM"]
+        direction TB
+        Guard["Sandbox + exec policy"]
+        Codex["Codex CLI"]
+        Git[(Local Git workspace)]
+        Sync["ha-sync client"]
+        Browser["Chrome + Playwright MCP"]
+
+        Guard -.-> Codex
+        Codex -->|"edit · diff · commit"| Git
+        Codex --> Sync
+        Codex --> Browser
+    end
+
+    subgraph NET["2 · Network boundary"]
+        direction TB
+        Web["ALLOW<br/>Home Assistant HTTPS"]
+        Files["ALLOW<br/>Bridge TCP 8443"]
+        Lateral["DENY<br/>HA SSH + unrelated LAN"]
+    end
+
+    subgraph HA["3 · Home Assistant OS"]
+        direction TB
+        Account["Dedicated HA browser account<br/>separate UI privilege boundary"]
+        Services["Home Assistant UI + Core<br/>Developer Tools · HACS · ESPHome"]
+        Bridge["Home Assistant Codex Bridge<br/>TLS + bearer authentication"]
+        Policy["Filesystem authorization<br/>DENY > READ_ONLY > READ_WRITE"]
+        Allowed[(Policy-visible /config files<br/>YAML · packages · ESPHome)]
+        Protected[(Protected / hidden data<br/>secrets.yaml · .storage · DB · backups)]
+
+        Account --> Services
+        Bridge --> Policy
+        Policy -->|"authorized paths only"| Allowed
+        Policy -.-> Protected
+    end
+
+    Codex -->|"HTTPS"| OpenAI
+    Browser -->|"UI session"| Web --> Account
+    Sync -->|"pinned TLS + bridge token"| Files --> Bridge
+    Codex -.-> Lateral
+
+    classDef compute fill:#f6f8fa,stroke:#57606a,stroke-width:1.5px,color:#24292f;
+    classDef boundary fill:#ddf4ff,stroke:#0969da,stroke-width:1.5px,color:#24292f;
+    classDef control fill:#fff8c5,stroke:#9a6700,stroke-width:1.5px,color:#24292f;
+    classDef allowed fill:#dafbe1,stroke:#1a7f37,stroke-width:1.5px,color:#24292f;
+    classDef denied fill:#ffebe9,stroke:#cf222e,stroke-width:1.5px,color:#24292f;
+
+    class Codex,Git,Sync,Browser,Account,Services,Bridge compute;
+    class OpenAI,Web,Files boundary;
+    class Guard,Policy control;
+    class Allowed allowed;
+    class Protected,Lateral denied;
+```
 
 The design deliberately has two independent Home Assistant access paths. `ha-sync` moves files between the local Git working tree and the HTTPS bridge, where Home Assistant-side policy decides what is readable, writable, or denied. Chrome + Playwright reaches the Home Assistant UI through a separate browser privilege boundary; filesystem policy does not make that UI account low privilege.
 
-Local Git is part of the VM work loop for diffs and known-good commits, not a bypass around the bridge. The VM should be denied general lateral LAN access, and bridge TCP 8443 should never be exposed to the public Internet.
+Local Git is part of the VM work loop for diffs and known-good commits, not a bypass around the bridge. The bridge token authenticates `ha-sync` but does not bypass the path policy. The VM should be denied general lateral LAN access, and bridge TCP 8443 should never be exposed to the public Internet.
 
 ## What Codex can do
 
@@ -117,7 +173,6 @@ codex/                         Codex templates
   homeassistant.rules
 
 docs/
-  architecture.svg
   FIRST_TIME_SETUP.md
   UBUNTU_RUNTIME.md
   PROMPTING.md
