@@ -36,32 +36,11 @@ The project combines:
 
 ## Architecture
 
-```mermaid
-flowchart TB
-    Internet((Internet))
+![Home Assistant Codex Bridge least-privilege architecture](docs/architecture.svg)
 
-    subgraph VM[Isolated Ubuntu desktop VM]
-        Codex[Codex CLI]
-        Git[Local Git workspace]
-        Sync[ha-sync]
-        Browser[Chrome + Playwright MCP]
-    end
+The design deliberately has two independent Home Assistant access paths. `ha-sync` moves files between the local Git working tree and the HTTPS bridge, where Home Assistant-side policy decides what is readable, writable, or denied. Chrome + Playwright reaches the Home Assistant UI through a separate browser privilege boundary; filesystem policy does not make that UI account low privilege.
 
-    subgraph HA[Home Assistant OS]
-        UI[Home Assistant UI]
-        Bridge[Home Assistant Codex Bridge]
-        Policy[Protected file policy]
-        Tools[ESPHome Device Builder / HACS]
-    end
-
-    Internet --> VM
-    Browser -->|HTTPS — your HA URL| UI
-    Sync -->|HTTPS 8443| Bridge
-    Bridge --> Policy
-    UI --> Tools
-```
-
-The VM should be denied general lateral LAN access. Do not expose bridge TCP 8443 to the public Internet.
+Local Git is part of the VM work loop for diffs and known-good commits, not a bypass around the bridge. The VM should be denied general lateral LAN access, and bridge TCP 8443 should never be exposed to the public Internet.
 
 ## What Codex can do
 
@@ -138,6 +117,7 @@ codex/                         Codex templates
   homeassistant.rules
 
 docs/
+  architecture.svg
   FIRST_TIME_SETUP.md
   UBUNTU_RUNTIME.md
   PROMPTING.md
