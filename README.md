@@ -37,61 +37,77 @@ The project combines:
 ## Architecture
 
 ```mermaid
-flowchart LR
-    OpenAI["OpenAI services<br/>Internet"]
-
-    subgraph VM["1 · Isolated Ubuntu Codex VM"]
+%%{init: {"flowchart": {"curve": "linear", "htmlLabels": true, "nodeSpacing": 26, "rankSpacing": 38}, "themeVariables": {"fontFamily": "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "15px"}}}%%
+flowchart TB
+    subgraph VM["1 · Isolated Codex VM"]
         direction TB
-        Guard["Sandbox + exec policy"]
+        Guard["Guardrails<br/>sandbox · exec policy"]
         Codex["Codex CLI"]
-        Git[(Local Git workspace)]
-        Sync["ha-sync client"]
-        Browser["Chrome + Playwright MCP"]
+        Git["Local Git workspace<br/>diff · commit · rollback"]
+        Sync["ha-sync<br/>file transport"]
+        Browser["Chrome + Playwright<br/>UI testing"]
 
-        Guard -.-> Codex
-        Codex -->|"edit · diff · commit"| Git
+        Guard --> Codex
+        Codex --> Git
         Codex --> Sync
         Codex --> Browser
     end
 
-    subgraph NET["2 · Network boundary"]
-        direction TB
-        Web["ALLOW<br/>Home Assistant HTTPS"]
-        Files["ALLOW<br/>Bridge TCP 8443"]
-        Lateral["DENY<br/>HA SSH + unrelated LAN"]
+    subgraph NET["2 · Explicit network boundary"]
+        direction LR
+        Internet["Internet HTTPS<br/>OpenAI services"]
+        Web["HA web HTTPS<br/>browser session"]
+        Files["Bridge TCP 8443<br/>pinned TLS + bearer token"]
+        DeniedNet["DENY<br/>HA SSH · unrelated LAN"]
     end
 
     subgraph HA["3 · Home Assistant OS"]
-        direction TB
-        Account["Dedicated HA browser account<br/>separate UI privilege boundary"]
-        Services["Home Assistant UI + Core<br/>Developer Tools · HACS · ESPHome"]
-        Bridge["Home Assistant Codex Bridge<br/>TLS + bearer authentication"]
-        Policy["Filesystem authorization<br/>DENY > READ_ONLY > READ_WRITE"]
-        Allowed[(Policy-visible /config files<br/>YAML · packages · ESPHome)]
-        Protected[(Protected / hidden data<br/>secrets.yaml · .storage · DB · backups)]
+        direction LR
 
-        Account --> Services
-        Bridge --> Policy
-        Policy -->|"authorized paths only"| Allowed
-        Policy -.-> Protected
+        subgraph UI["Browser boundary"]
+            direction TB
+            Account["Dedicated HA<br/>browser account"]
+            Services["Home Assistant UI + Core<br/>Developer Tools · HACS · ESPHome"]
+            Account --> Services
+        end
+
+        subgraph FS["Filesystem boundary"]
+            direction TB
+            Bridge["Home Assistant Codex Bridge"]
+            Policy["Deny-first path policy<br/>read-only · read/write"]
+            Approved["Policy-visible configuration<br/>YAML · packages · ESPHome"]
+            Protected["Protected data<br/>secrets · .storage · DB · backups"]
+
+            Bridge --> Policy
+            Policy --> Approved
+            Policy -.-> Protected
+        end
     end
 
-    Codex -->|"HTTPS"| OpenAI
-    Browser -->|"UI session"| Web --> Account
-    Sync -->|"pinned TLS + bridge token"| Files --> Bridge
-    Codex -.-> Lateral
+    Codex --> Internet
+    Browser --> Web --> Account
+    Sync --> Files --> Bridge
+    Codex -.-> DeniedNet
 
-    classDef compute fill:#f6f8fa,stroke:#57606a,stroke-width:1.5px,color:#24292f;
-    classDef boundary fill:#ddf4ff,stroke:#0969da,stroke-width:1.5px,color:#24292f;
-    classDef control fill:#fff8c5,stroke:#9a6700,stroke-width:1.5px,color:#24292f;
-    classDef allowed fill:#dafbe1,stroke:#1a7f37,stroke-width:1.5px,color:#24292f;
-    classDef denied fill:#ffebe9,stroke:#cf222e,stroke-width:1.5px,color:#24292f;
+    classDef primary fill:#0969da,stroke:#0969da,color:#ffffff,stroke-width:1.4px,rx:6px,ry:6px;
+    classDef neutral fill:#f6f8fa,stroke:#8c959f,color:#24292f,stroke-width:1px,rx:6px,ry:6px;
+    classDef control fill:#fff8c5,stroke:#bf8700,color:#24292f,stroke-width:1px,rx:6px,ry:6px;
+    classDef allow fill:#dafbe1,stroke:#1a7f37,color:#24292f,stroke-width:1px,rx:6px,ry:6px;
+    classDef deny fill:#ffebe9,stroke:#cf222e,color:#24292f,stroke-width:1px,rx:6px,ry:6px;
+    classDef network fill:#ddf4ff,stroke:#218bff,color:#24292f,stroke-width:1px,rx:6px,ry:6px;
 
-    class Codex,Git,Sync,Browser,Account,Services,Bridge compute;
-    class OpenAI,Web,Files boundary;
+    class Codex,Bridge primary;
+    class Git,Sync,Browser,Account,Services neutral;
     class Guard,Policy control;
-    class Allowed allowed;
-    class Protected,Lateral denied;
+    class Approved allow;
+    class Protected,DeniedNet deny;
+    class Internet,Web,Files network;
+
+    style VM fill:#ffffff,stroke:#d0d7de,stroke-width:1.3px,rx:8px,ry:8px
+    style NET fill:#f6f8fa,stroke:#d0d7de,stroke-width:1.3px,rx:8px,ry:8px
+    style HA fill:#ffffff,stroke:#d0d7de,stroke-width:1.3px,rx:8px,ry:8px
+    style UI fill:#f6f8fa,stroke:#d8dee4,stroke-width:1px,rx:6px,ry:6px
+    style FS fill:#f6f8fa,stroke:#d8dee4,stroke-width:1px,rx:6px,ry:6px
 ```
 
 The design deliberately has two independent Home Assistant access paths. `ha-sync` moves files between the local Git working tree and the HTTPS bridge, where Home Assistant-side policy decides what is readable, writable, or denied. Chrome + Playwright reaches the Home Assistant UI through a separate browser privilege boundary; filesystem policy does not make that UI account low privilege.
