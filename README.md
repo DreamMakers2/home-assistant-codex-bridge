@@ -37,13 +37,13 @@ The project combines:
 ## Architecture
 
 ```mermaid
-%%{init: {"flowchart": {"curve": "linear", "htmlLabels": true, "nodeSpacing": 26, "rankSpacing": 38}, "themeVariables": {"fontFamily": "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "15px"}}}%%
+%%{init: {"theme":"base","flowchart":{"curve":"linear","htmlLabels":true,"nodeSpacing":22,"rankSpacing":32,"diagramPadding":10},"themeVariables":{"fontFamily":"-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif","fontSize":"15px","background":"#ffffff","primaryTextColor":"#24292f","secondaryTextColor":"#24292f","tertiaryTextColor":"#24292f","textColor":"#24292f","titleColor":"#24292f","lineColor":"#57606a","clusterBkg":"#ffffff","clusterBorder":"#d0d7de","edgeLabelBackground":"#ffffff"},"themeCSS":".cluster-label span{color:#24292f!important;font-weight:650!important}.cluster-label text{fill:#24292f!important;font-weight:650!important}"}}%%
 flowchart TB
-    subgraph VM["1 · Isolated Codex VM"]
+    subgraph VM["1 · Codex workspace"]
         direction TB
         Guard["Guardrails<br/>sandbox · exec policy"]
         Codex["Codex CLI"]
-        Git["Local Git workspace<br/>diff · commit · rollback"]
+        Git["Local Git<br/>change tracking"]
         Sync["ha-sync<br/>file transport"]
         Browser["Chrome + Playwright<br/>UI testing"]
 
@@ -53,41 +53,41 @@ flowchart TB
         Codex --> Browser
     end
 
-    subgraph NET["2 · Explicit network boundary"]
+    subgraph NET["2 · Network policy"]
         direction LR
-        Internet["Internet HTTPS<br/>OpenAI services"]
-        Web["HA web HTTPS<br/>browser session"]
-        Files["Bridge TCP 8443<br/>pinned TLS + bearer token"]
-        DeniedNet["DENY<br/>HA SSH · unrelated LAN"]
+        Egress["Internet egress<br/>OpenAI HTTPS"]
+        BridgePath["File bridge<br/>TCP 8443 · pinned TLS"]
+        UiPath["Home Assistant web<br/>browser session"]
+        DenyNet["BLOCKED<br/>SSH · unrelated LAN"]
     end
 
     subgraph HA["3 · Home Assistant OS"]
         direction LR
 
-        subgraph UI["Browser boundary"]
+        subgraph FS["Filesystem plane"]
             direction TB
-            Account["Dedicated HA<br/>browser account"]
-            Services["Home Assistant UI + Core<br/>Developer Tools · HACS · ESPHome"]
-            Account --> Services
-        end
-
-        subgraph FS["Filesystem boundary"]
-            direction TB
-            Bridge["Home Assistant Codex Bridge"]
-            Policy["Deny-first path policy<br/>read-only · read/write"]
-            Approved["Policy-visible configuration<br/>YAML · packages · ESPHome"]
+            Bridge["Codex Bridge"]
+            Policy["Path policy<br/>deny → read-only → read/write"]
+            Approved["Policy-visible config<br/>YAML · packages · ESPHome"]
             Protected["Protected data<br/>secrets · .storage · DB · backups"]
 
             Bridge --> Policy
             Policy --> Approved
             Policy -.-> Protected
         end
+
+        subgraph UI["Browser plane"]
+            direction TB
+            Account["Dedicated HA<br/>browser account"]
+            Services["Home Assistant UI + Core<br/>Developer Tools · HACS · ESPHome"]
+            Account --> Services
+        end
     end
 
-    Codex --> Internet
-    Browser --> Web --> Account
-    Sync --> Files --> Bridge
-    Codex -.-> DeniedNet
+    Codex --> Egress
+    Sync --> BridgePath --> Bridge
+    Browser --> UiPath --> Account
+    Codex -.-> DenyNet
 
     classDef primary fill:#0969da,stroke:#0969da,color:#ffffff,stroke-width:1.4px,rx:6px,ry:6px;
     classDef neutral fill:#f6f8fa,stroke:#8c959f,color:#24292f,stroke-width:1px,rx:6px,ry:6px;
@@ -100,14 +100,16 @@ flowchart TB
     class Git,Sync,Browser,Account,Services neutral;
     class Guard,Policy control;
     class Approved allow;
-    class Protected,DeniedNet deny;
-    class Internet,Web,Files network;
+    class Protected,DenyNet deny;
+    class Egress,BridgePath,UiPath network;
 
-    style VM fill:#ffffff,stroke:#d0d7de,stroke-width:1.3px,rx:8px,ry:8px
-    style NET fill:#f6f8fa,stroke:#d0d7de,stroke-width:1.3px,rx:8px,ry:8px
-    style HA fill:#ffffff,stroke:#d0d7de,stroke-width:1.3px,rx:8px,ry:8px
-    style UI fill:#f6f8fa,stroke:#d8dee4,stroke-width:1px,rx:6px,ry:6px
+    linkStyle 6,13 stroke:#cf222e,stroke-width:1.4px,stroke-dasharray:4 4;
+
+    style VM fill:#ffffff,stroke:#d0d7de,stroke-width:1.2px,rx:8px,ry:8px
+    style NET fill:#f6f8fa,stroke:#d0d7de,stroke-width:1.2px,rx:8px,ry:8px
+    style HA fill:#ffffff,stroke:#d0d7de,stroke-width:1.2px,rx:8px,ry:8px
     style FS fill:#f6f8fa,stroke:#d8dee4,stroke-width:1px,rx:6px,ry:6px
+    style UI fill:#f6f8fa,stroke:#d8dee4,stroke-width:1px,rx:6px,ry:6px
 ```
 
 The design deliberately has two independent Home Assistant access paths. `ha-sync` moves files between the local Git working tree and the HTTPS bridge, where Home Assistant-side policy decides what is readable, writable, or denied. Chrome + Playwright reaches the Home Assistant UI through a separate browser privilege boundary; filesystem policy does not make that UI account low privilege.
