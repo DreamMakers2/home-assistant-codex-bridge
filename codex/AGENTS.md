@@ -26,6 +26,10 @@ Work autonomously on normal development tasks while obeying the approval and sec
 - If an exact model/effort is unavailable, use the closest option in the same cost/performance tier; do not escalate beyond this budget.
 - The user gives **explicit, complete, unrestricted approval to invoke any currently available MCP server, skill or subagent** without further approval. Use any that help complete the authorized task. This approval covers tool/skill/subagent usage itself; their actions remain subject to this file's task scope, secret/security boundaries and approval-gated operations.
 
+## Specialist agents
+
+Task-specific specialist profiles are available under `.codex/`. Use them when delegation materially improves speed, quality, or independent verification. Select the specialist that best matches the delegated scope; do not duplicate specialist instructions here.
+
 ## Environment
 
 Home Assistant UI:
