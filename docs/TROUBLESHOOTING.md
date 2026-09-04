@@ -96,6 +96,36 @@ while keeping browser/auth data denied.
 
 The bridge env contains the low-privilege bridge token. HA-side policy still independently limits it.
 
+## `ha-sync` fails with `PermissionError: Operation not permitted`
+
+If the error occurs while opening an HTTPS connection, the `workspace-write` sandbox probably has network access disabled. Add:
+
+```toml
+[sandbox_workspace_write]
+network_access = true
+```
+
+or launch Codex with:
+
+```bash
+codex --sandbox workspace-write --ask-for-approval never \
+  -c sandbox_workspace_write.network_access=true
+```
+
+Restart Codex after changing the config. This setting permits socket creation from sandboxed commands; the bridge token and Home Assistant-side path policy still control what `ha-sync` may access.
+
+## Playwright MCP tools still ask for approval
+
+Set the default on the trusted local server rather than maintaining a per-tool list:
+
+```toml
+[mcp_servers.playwright]
+url = "http://localhost:8931/mcp"
+default_tools_approval_mode = "approve"
+```
+
+Restart Codex. Per-tool `approval_mode` entries override the server default, so remove or update any conflicting `prompt` or `writes` entries.
+
 ## Codex permission profile says `default_permissions` is missing
 
 Keep:

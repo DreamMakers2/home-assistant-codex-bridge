@@ -604,6 +604,8 @@ The template:
 - permits only the narrow bridge helper/config it needs;
 - permits workspace files;
 - explicitly permits `.git` metadata so local commits work;
+- enables HTTPS sockets in explicit `workspace-write` sessions so `ha-sync` works;
+- registers the trusted local Playwright MCP server with all its tools approved;
 - keeps secret-bearing workspace paths denied.
 
 Restart Codex after permission changes.
@@ -649,7 +651,15 @@ chmod 700 client/install-codex-desktop-shortcut.sh
 client/install-codex-desktop-shortcut.sh
 ```
 
-This creates **Home Assistant Codex** on the Ubuntu desktop. It starts a fresh Codex session in the workspace.
+This creates three launchers on the Ubuntu desktop:
+
+- **Home Assistant Codex** starts the configured permission profile and keeps normal command approvals;
+- **Home Assistant Codex (no approval)** uses `workspace-write`, never prompts, and explicitly enables network access so `ha-sync` can use HTTPS;
+- **Home Assistant Codex (yolo)** disables the Codex sandbox and approval prompts entirely.
+
+All three set Playwright MCP's server-wide tool approval mode to `approve`. This prevents ordinary tool-call prompts for current and newly exposed Playwright tools unless a managed requirement or stronger tool policy takes precedence. It does not remove the task-level operating rules in `AGENTS.md`.
+
+Use the yolo launcher only when the Ubuntu VM itself is the intended security boundary. It gives model-generated commands the runtime user's full access.
 
 ## 22. Firewall verification
 

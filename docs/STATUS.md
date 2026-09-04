@@ -1,6 +1,6 @@
 # Reference implementation status
 
-Last documentation review: **2026-08-24**
+Last documentation review: **2026-09-04**
 
 ## Overall
 
@@ -35,6 +35,8 @@ Local Git stage/commit                      PASS
 Codex auth-file sandbox deny                PASS
 Browser-profile sandbox deny                PASS
 sudo exec-policy deny                       PASS
+Workspace-write HTTPS for ha-sync           PASS
+Playwright MCP default tool approval         PASS
 ```
 
 ## Publication status

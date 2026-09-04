@@ -8,6 +8,18 @@
 
 default_permissions = "homeassistant"
 
+# Plain `--sandbox workspace-write` sessions do not inherit the custom
+# permission profile's network setting. Keep HTTPS available for ha-sync.
+[sandbox_workspace_write]
+network_access = true
+
+[mcp_servers.playwright]
+url = "http://localhost:8931/mcp"
+
+# Allow every current and future tool exposed by this trusted local MCP server
+# to run without a separate MCP tool approval prompt.
+default_tools_approval_mode = "approve"
+
 [permissions.homeassistant]
 description = "Home Assistant development with restricted host access"
 extends = ":workspace"

@@ -40,7 +40,16 @@ CODEX_HA_WORKSPACE=/path/to/workspace \
   client/install-codex-desktop-shortcut.sh
 ```
 
-GNOME may require **Allow Launching** once.
+GNOME may require **Allow Launching** once for each launcher.
+
+The installer creates standard, **no approval**, and **yolo** launchers. The no-approval launcher retains `workspace-write` isolation but pins:
+
+```text
+sandbox_workspace_write.network_access=true
+mcp_servers.playwright.default_tools_approval_mode=approve
+```
+
+The first setting lets `ha-sync` create its HTTPS connection. The second suppresses ordinary Playwright MCP tool prompts, including for tools added by a later Playwright MCP release, unless managed requirements or a stronger tool policy take precedence. The yolo launcher uses `--dangerously-bypass-approvals-and-sandbox`; use it only when the VM is an adequate external sandbox.
 
 ## Headed Playwright MCP
 
@@ -83,6 +92,14 @@ Register with Codex:
 ```bash
 codex mcp remove playwright 2>/dev/null || true
 codex mcp add playwright --url http://localhost:8931/mcp
+```
+
+Then merge the following into `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.playwright]
+url = "http://localhost:8931/mcp"
+default_tools_approval_mode = "approve"
 ```
 
 Use `localhost`, not `127.0.0.1`.

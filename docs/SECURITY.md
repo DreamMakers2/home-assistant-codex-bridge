@@ -28,6 +28,18 @@ Codex VM -> SSH / unrelated LAN      DENY
 
 Do not give the VM HAOS root/SSH credentials or general host filesystem access.
 
+### Launcher security modes
+
+The desktop installer exposes three deliberate trust levels:
+
+- **Home Assistant Codex** uses the configured `homeassistant` permission profile and normal approval behavior;
+- **no approval** uses the built-in `workspace-write` sandbox with command approvals disabled and outbound networking enabled for `ha-sync`;
+- **yolo** uses `--dangerously-bypass-approvals-and-sandbox` and therefore gives model-generated commands the full authority of the Ubuntu runtime user.
+
+The no-approval and yolo launchers are convenience modes, not equivalent to the least-privilege default. In particular, yolo removes the Codex filesystem boundary protecting auth data and browser/session material. Use it only when the entire VM is disposable or otherwise provides the intended external isolation.
+
+The Playwright MCP entry uses `default_tools_approval_mode = "approve"` because the local headed browser server is an intentional trusted capability in this design. That setting removes ordinary MCP tool prompts; it does not weaken the bridge's path policy, firewall controls, Home Assistant authorization, managed Codex requirements or the behavioral constraints in `AGENTS.md`.
+
 ### HA-side bridge
 
 The bridge is the hard filesystem authorization boundary.

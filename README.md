@@ -16,6 +16,7 @@ The project combines:
 - the `ha-sync` client for controlled file synchronization;
 - a dedicated Home Assistant browser account;
 - visible Chrome + Playwright MCP for functional and visual testing;
+- preconfigured Playwright MCP approval defaults and workspace HTTPS access for `ha-sync`;
 - Codex sandbox/exec-policy examples;
 - task-scoped authorization rules for normal iterative work and named ESPHome devices;
 - local Git change tracking.
