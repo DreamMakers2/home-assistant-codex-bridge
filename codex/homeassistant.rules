@@ -74,3 +74,9 @@ prefix_rule(
     decision = "allow",
     justification = "ha-sync is the approved restricted Home Assistant file interface.",
 )
+
+prefix_rule(
+    pattern = ["/home/codex/bin/ha-sync"],
+    decision = "allow",
+    justification = "The installed absolute ha-sync path is the approved restricted Home Assistant file interface.",
+)
