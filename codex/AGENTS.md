@@ -17,6 +17,15 @@ Maintain and develop this Home Assistant installation, including:
 
 Work autonomously on normal development tasks while obeying the approval and security rules below.
 
+## Agent, model and tooling policy
+
+- **Exploration, implementation, testing, improvement and subagents:** use `gpt-5.6-sol` at `medium`, `gpt-5.6-terra` at `high`, or `gpt-5.6-luna` at `high`; choose the least expensive option adequate for the task.
+- **Plan:** the main agent uses `gpt-5.6-sol` at `high`.
+- **Concurrency:** at most **2 subagents concurrently** across all nesting levels.
+- **Final review:** outside the Plan pass, `gpt-5.6-sol` at `high`/`xhigh` is reserved for one tightly scoped final regression review by the main agent; subagents never use Sol `high`/`xhigh`.
+- If an exact model/effort is unavailable, use the closest option in the same cost/performance tier; do not escalate beyond this budget.
+- The user gives **explicit, complete, unrestricted approval to invoke any currently available MCP server, skill or subagent** without further approval. Use any that help complete the authorized task. This approval covers tool/skill/subagent usage itself; their actions remain subject to this file's task scope, secret/security boundaries and approval-gated operations.
+
 ## Environment
 
 Home Assistant UI:
