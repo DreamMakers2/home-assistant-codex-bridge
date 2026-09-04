@@ -7,14 +7,6 @@ Use https://github.com/DreamMakers2/home-assistant-codex-bridge
 
 Read `CODEX_REFERENCE.md` from that repository and the local workspace `AGENTS.md` before doing anything else. Treat the local `AGENTS.md` and your own access/safety restrictions as the active operating contract.
 
-Use this model/reasoning budget throughout:
-- **Exploration:** use GPT-5.6 Sol at `medium` for the main agent unless a narrow subtask is better delegated; subagents may use `Sol/medium`, `Terra/high`, or `Luna/high`.
-- **Plan:** use GPT-5.6 Sol at `high` reasoning for the main agent.
-- **Implementation, testing, improvement, and all subagent work:** use only `Sol/medium`, `Terra/high`, or `Luna/high`, choosing the least expensive option that is strong enough for the task. Do not use `Sol/high` or `Sol/xhigh` during this phase.
-- **Concurrency:** run at most **2 subagents concurrently**.
-- **Final review:** after implementation and re-testing are complete, the **main agent only** may run one tightly scoped final regression review using GPT-5.6 Sol at `high` or `xhigh`. Apart from the required Plan pass, this is the only use of `Sol/high`/`Sol/xhigh`; subagents must never use those levels.
-If an exact named model/effort is unavailable, use the closest available option within the same cost/performance tier rather than escalating outside this budget.
-
 If Codex CLI supports Plan/Goal collaboration modes, use this sequence:
 1. **Plan mode:** exploration run first, then the implementation plan.
 2. **Goal mode:** execute the approved-by-this-prompt plan autonomously through completion.
@@ -39,7 +31,7 @@ Before writing the implementation plan or making project changes, perform a read
 - Whether the new dashboard can be created, rendered, edited, validated, and visually tested without modifying an existing dashboard.
 - Any environmental, permission, API, browser, storage, or tooling limitation that would prevent a fully autonomous implement → test → review → improve → review cycle.
 
-Use subagents for independent exploration where useful, subject to the model budget and maximum concurrency above. Do not make implementation changes until the exploration is complete.
+Use subagents for independent exploration where useful. Do not make implementation changes until the exploration is complete.
 
 ## 2. Scope and isolation
 
@@ -194,7 +186,7 @@ After exploration, create a concise implementation plan in Plan mode if supporte
 - review/refinement loop;
 - any discovered constraints and the chosen workaround.
 
-Run the Plan pass with GPT-5.6 Sol at `high`, then switch back to the implementation-tier model budget above before executing. Execute without waiting for me.
+Then execute without waiting for me.
 
 Use the normal autonomous loop repeatedly until the project meets the acceptance criteria:
 
@@ -202,10 +194,10 @@ Use the normal autonomous loop repeatedly until the project meets the acceptance
 
 Do not stop after generating YAML. The dashboard must be created/deployed in Home Assistant and visibly rendered.
 
-Use independent subagents for implementation/data/storage and visual/responsive review whenever appropriate, subject to the maximum of 2 concurrent subagents and the implementation-tier model budget. At minimum, before declaring completion perform:
+Use independent subagents for implementation/data/storage and visual/responsive review whenever appropriate. At minimum, before declaring completion perform:
 1. an implementation/data/storage review independent from the primary implementation pass;
 2. a visual/responsive review across the required viewport/sidebar matrix;
-3. after fixes and affected re-tests, one **tightly scoped final regression review by the main agent**. Only this final main-agent review may use GPT-5.6 Sol at `high` or `xhigh` after the Plan pass.
+3. after fixes and affected re-tests, one tightly scoped final regression review by the main agent.
 
 Fix issues found by reviews and rerun affected tests.
 
