@@ -8,10 +8,17 @@ Read that repository’s `CODEX_REFERENCE.md` and the local workspace `AGENTS.md
 
 ## Operating mode and autonomy
 
-- Use the latest GPT model exposed by this Codex CLI installation that supports `x-high`/`xhigh` reasoning, and run at that reasoning level.
-- Explicitly use subagents whenever independent work can be parallelized or a second opinion can improve quality. Appropriate delegation includes environment exploration, individual API/source verification, data architecture, Home Assistant integration checks, browser/visual testing, and independent code/config review. Prefer the same latest model at x-high reasoning for subagents; if the runtime makes subagents inherit the parent model/effort, keep the parent on the required model/effort. Do not deliberately downgrade agents to cheaper/faster models.
+Use this model/reasoning budget throughout:
+- **Exploration:** use GPT-5.6 Sol at `medium` for the main agent unless a narrow subtask is better delegated; subagents may use `Sol/medium`, `Terra/high`, or `Luna/high`.
+- **Plan:** use GPT-5.6 Sol at `high` reasoning for the main agent.
+- **Implementation, testing, improvement, and all subagent work:** use only `Sol/medium`, `Terra/high`, or `Luna/high`, choosing the least expensive option that is strong enough for the task. Do not use `Sol/high` or `Sol/xhigh` during this phase.
+- **Concurrency:** run at most **2 subagents concurrently**.
+- **Final review:** after implementation and re-testing are complete, the **main agent only** may run one tightly scoped final regression review using GPT-5.6 Sol at `high` or `xhigh`. Apart from the required Plan pass, this is the only use of `Sol/high`/`Sol/xhigh`; subagents must never use those levels.
+If an exact named model/effort is unavailable, use the closest available option within the same cost/performance tier rather than escalating outside this budget.
+
+- Explicitly use subagents whenever independent work can be parallelized or a second opinion can improve quality, subject to the model budget and maximum concurrency above. Appropriate delegation includes environment exploration, individual API/source verification, data architecture, Home Assistant integration checks, browser/visual testing, and independent code/config review.
 - If Codex CLI supports Plan mode, use it first for the exploration and implementation plan. After the plan is complete, if the CLI exposes an explicit Goal/Follow-a-goal mode, switch to it and use the Definition of Done below as the durable goal. If no such Goal mode exists, continue in the normal autonomous execution mode. Do not stop after planning.
-- Execute the full cycle autonomously: **explore → plan → implement → validate/test → review → improve → re-test → independent final review**.
+- Execute the full cycle autonomously: **explore → plan → implement → validate/test → review → improve → re-test → final main-agent review**.
 - Do not ask me routine implementation questions or request confirmations. Infer reasonable choices from the environment and this brief.
 - If an unavoidable external prerequisite or permission boundary blocks one part of the project, do not bypass the boundary and do not fabricate success. Continue all unblocked work, adapt where safely possible, and report the exact blocker and smallest manual prerequisite at the end.
 - Keep this a hobby project: avoid production-scale error-handling frameworks, elaborate auth schemes, excessive abstractions, or infrastructure that is not needed for this dashboard.
@@ -67,7 +74,7 @@ At minimum verify:
    - verify outbound access needed by HTTP APIs and SCiMMA Kafka;
    - identify any permission, runtime, package-install, persistent-process, storage, MQTT, browser, or HA limitation that would prevent autonomous completion.
 
-Do not create the implementation plan until this exploration is complete.
+Do not create the implementation plan until this exploration is complete. Use no more than 2 concurrent subagents during exploration and keep them within the allowed exploration/implementation model tier.
 
 ## Scope
 
@@ -246,7 +253,7 @@ API keys and credentials required for this project already exist through secrets
 
 ## Implementation and test cycle
 
-After exploration, produce a concrete implementation plan in Plan mode, then execute it fully.
+After exploration, produce a concrete implementation plan in Plan mode using GPT-5.6 Sol at `high`, then switch back to the implementation-tier model budget above before executing it fully.
 
 For each logical phase:
 1. implement the smallest coherent slice;
@@ -278,14 +285,14 @@ For Lovelace:
 
 ## Review requirements
 
-Use subagents for independent review where available.
+Use subagents for independent technical and visual review where useful, subject to the maximum of 2 concurrent subagents and the implementation-tier model budget.
 
 After the first complete implementation:
 - run an independent technical review of data ingestion, retention, secret handling, HA integration, and change scope;
 - run an independent visual/layout review against the exact viewport/sidebar matrix;
 - fix justified findings;
 - re-run affected tests;
-- perform a final independent review after improvements.
+- perform one **tightly scoped final regression review by the main agent** after improvements. Only this final main-agent review may use GPT-5.6 Sol at `high` or `xhigh` after the Plan pass.
 
 Do not accept “works in YAML” as done if the actual dashboard is visually broken or empty.
 
@@ -307,8 +314,8 @@ The task is complete only when, within the access actually available:
 - the dashboard is functional and visually polished at **2560×1285** with both sidebar states and has **zero scrollbars/overflow/overlap**;
 - `1920×965` and `2752×997` are also tested in both sidebar states and have zero scrollbars/overflow/overlap;
 - browser console/network issues introduced by the project are resolved;
-- an independent review has been performed, findings addressed, and a final review completed;
+- independent lower-tier reviews have been performed, findings addressed, and the tightly scoped final main-agent review completed;
 - known-good work is committed locally;
 - the final report is concise and includes: what was created, dashboard path/name, integrated source status, retention/storage implementation, tests performed, viewport/sidebar results, commits, and any remaining hard blockers/manual prerequisite.
 
-Do not stop at a design, YAML draft, or partial proof of concept. Carry the project as far through the full implement → test → review → improve → review cycle as the established permissions and safety boundaries allow.
+Do not stop at a design, YAML draft, or partial proof of concept. Carry the project as far through the full implement → test → review → improve → final main-agent review cycle as the established permissions and safety boundaries allow.
