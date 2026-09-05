@@ -64,6 +64,7 @@ Read/write:
 /homeassistant/themes.yaml
 /homeassistant/themes/**
 /homeassistant/packages/codex/**
+/homeassistant/packages/statistics_data.yaml
 /homeassistant/esphome/*.yaml
 /homeassistant/esphome/**/*.yaml
 ```
