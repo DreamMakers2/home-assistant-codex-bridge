@@ -37,6 +37,25 @@ Bridge URL:            https://<HA_HOST>:8443
 Codex VM fixed IP:     <CODEX_VM_IP>
 ```
 
+## Codex context-efficiency profile
+
+HA sessions are unusually tool-heavy, so the reference configuration and desktop launchers apply these limits:
+
+```toml
+model_auto_compact_token_limit = 110000
+model_auto_compact_token_limit_scope = "total"
+tool_output_token_limit = 4000
+
+[agents]
+max_concurrent_threads_per_session = 3
+```
+
+The shared thread limit includes the root thread, so `3` preserves the operating policy of up to two concurrent subagents. The limits are intended to reduce repeated processing of large retained tool outputs and very large late-session contexts, **not** to remove the project’s QA structure. Required functional/visual tests, independent reviews, justified fix/re-test passes and the final main-agent regression review remain in force.
+
+The default Playwright MCP profile keeps normal browser QA available but disables `browser_run_code_unsafe`; targeted find/evaluate/snapshot tools remain available. Prefer bounded retrieval and compact returned evidence. If full raw logs/diffs/traces are needed, save them to a temporary file and inspect focused slices rather than retaining the whole payload in later prompts.
+
+`codex/config.example.toml` is a merge template for `~/.codex/config.toml`. The launcher installer also pins the compaction/output/thread controls per HA session so unrelated Codex projects do not have to use the same limits. Restart Codex after changing global config.
+
 ## File transport
 
 Use `ha-sync` for Home Assistant filesystem work.
