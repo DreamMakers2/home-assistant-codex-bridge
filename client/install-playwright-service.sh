@@ -22,7 +22,9 @@ AUTOSTART_FILE="$AUTOSTART_DIR/playwright-mcp.desktop"
 BIN_DIR="$HOME/bin"
 STARTER="$BIN_DIR/start-playwright-mcp"
 PROFILE="$HOME/.config/codex-ha/browser-profile"
-MCP_PACKAGE="${PLAYWRIGHT_MCP_PACKAGE:-@playwright/mcp@latest}"
+# Pinned for reproducible tool schemas/output behavior. Override deliberately
+# with PLAYWRIGHT_MCP_PACKAGE when testing a newer release.
+MCP_PACKAGE="${PLAYWRIGHT_MCP_PACKAGE:-@playwright/mcp@0.0.80}"
 
 mkdir -p "$SERVICE_DIR" "$AUTOSTART_DIR" "$BIN_DIR" "$PROFILE"
 chmod 700 "$BIN_DIR" "$HOME/.config/codex-ha" 2>/dev/null || true
@@ -90,6 +92,7 @@ systemctl --user --no-pager --full status playwright-mcp.service | head -20
 
 echo
 echo "Playwright MCP endpoint: http://localhost:8931/mcp"
+echo "Package: $MCP_PACKAGE"
 echo "The graphical-login autostart entry restarts headed Playwright with the"
 echo "real DISPLAY/Wayland environment after each login/reboot."
 echo
@@ -97,5 +100,5 @@ echo "Configure Codex with:"
 echo "  codex mcp remove playwright 2>/dev/null || true"
 echo "  codex mcp add playwright --url http://localhost:8931/mcp"
 echo
-echo "For reproducible deployments, set PLAYWRIGHT_MCP_PACKAGE to a pinned"
-echo "package version before running this installer."
+echo "To deliberately test a different Playwright MCP release, set"
+echo "PLAYWRIGHT_MCP_PACKAGE before running this installer."
