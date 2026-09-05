@@ -8,6 +8,22 @@
 
 default_permissions = "homeassistant"
 
+# HA sessions are tool-heavy and can otherwise spend many turns near the full
+# context window. Compact earlier while keeping ample room for implementation,
+# QA and reviewer/improve/re-test loops.
+model_auto_compact_token_limit = 110000
+model_auto_compact_token_limit_scope = "total"
+
+# Limit the amount of any single tool/function result retained in model history.
+# When full raw output matters, save it to a temporary file and retrieve only the
+# relevant slice rather than keeping the entire payload in every later prompt.
+tool_output_token_limit = 4000
+
+[agents]
+# This shared pool includes the root thread, so 3 preserves the existing policy
+# of allowing at most two concurrent subagents.
+max_concurrent_threads_per_session = 3
+
 # Plain `--sandbox workspace-write` sessions do not inherit the custom
 # permission profile's network setting. Keep HTTPS available for ha-sync.
 [sandbox_workspace_write]
@@ -19,6 +35,11 @@ url = "http://localhost:8931/mcp"
 # Allow every current and future tool exposed by this trusted local MCP server
 # to run without a separate MCP tool approval prompt.
 default_tools_approval_mode = "approve"
+
+# Keep normal browser QA available, but omit the unusually broad unsafe code
+# runner from the default tool surface. Targeted evaluate/find/snapshot tools
+# remain available for functional and visual verification.
+disabled_tools = ["browser_run_code_unsafe"]
 
 [permissions.homeassistant]
 description = "Home Assistant development with restricted host access"
