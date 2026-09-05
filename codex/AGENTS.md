@@ -30,6 +30,18 @@ Work autonomously on normal development tasks while obeying the approval and sec
 
 Task-specific specialist profiles are available under `.codex/`. Use them when delegation materially improves speed, quality, or independent verification. Select the specialist that best matches the delegated scope; do not duplicate specialist instructions here.
 
+## Token and context discipline
+
+Token efficiency is subordinate to correctness and the task's Definition of Done. Do not skip a required validation, independent review, visual acceptance check, justified improve/re-test cycle, or final regression review solely to save tokens. Instead reduce avoidable context growth around those quality gates.
+
+- Prefer targeted retrieval over broad inventory. Do not print complete large files, directory trees, logs, diffs, state registries, API payloads, browser accessibility trees, console histories or network histories when a bounded query or excerpt can answer the question.
+- For potentially large command/tool output, filter or summarize it locally first. If the full artifact may still be needed, save it under `/tmp` or another task-appropriate temporary path and return only a compact summary plus the path; retrieve narrow slices later as needed.
+- Batch related independent inspections when that reduces model/tool round trips **and** the combined returned output remains bounded. Do not combine commands merely to create one very large response.
+- Do not reread unchanged material already established in the current task. Re-read only the portion whose state may have changed or whose exact text is needed for a decision/review.
+- Use Playwright whenever rendered UI/browser behavior is materially relevant, but prefer targeted element lookup, bounded DOM/state evaluation returning small scalar/JSON results, and decisive screenshots over repeated full-page snapshots or broad dumps. Required viewport/sidebar coverage, relevant console/network checks and visual review still must be completed.
+- Delegate genuinely independent work that materially improves implementation or review quality. Avoid duplicate parallel exploration or multiple agents re-reading the same broad context without a specific independent-review purpose.
+- When a reviewer finds a justified defect, fix it and re-run the affected checks. Do not impose an arbitrary low iteration count that could leave a known quality defect unresolved; keep each subsequent pass scoped to the changed/failing area rather than replaying the entire project unnecessarily.
+
 ## Environment
 
 Home Assistant UI:
