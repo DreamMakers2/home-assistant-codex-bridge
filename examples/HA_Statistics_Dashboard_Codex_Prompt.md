@@ -14,6 +14,10 @@ If those modes are unavailable, emulate the same sequence internally without pau
 
 Do not ask me questions during normal execution. Resolve ambiguity by inspecting the environment and choosing the smallest conservative solution consistent with this prompt. If a hard capability/security boundary makes a requirement impossible, do not circumvent it: continue all independent work, leave only the blocked portion undone, and document the exact blocker in the final report.
 
+### Context-efficiency requirement
+
+Preserve the complete implementation → test → independent review → improve → affected re-test → final main-agent regression structure below. Token efficiency does **not** authorize skipping required live-data checks, the viewport/sidebar matrix, independent reviews, justified fixes, or the final regression pass. Reduce avoidable context growth instead: use targeted/bounded searches and excerpts rather than broad dumps; filter or summarize large command/API/log/diff output locally; save bulky evidence to temporary files and retrieve only relevant slices; avoid rereading unchanged material; and for Playwright prefer targeted element lookup, compact evaluations and decisive screenshots over repeated full accessibility snapshots or broad console/network histories.
+
 ## 1. Mandatory exploration run before planning
 
 Before writing the implementation plan or making project changes, perform a read-only exploration sufficient to determine whether the work can be completed autonomously. Verify at minimum:
@@ -31,7 +35,7 @@ Before writing the implementation plan or making project changes, perform a read
 - Whether the new dashboard can be created, rendered, edited, validated, and visually tested without modifying an existing dashboard.
 - Any environmental, permission, API, browser, storage, or tooling limitation that would prevent a fully autonomous implement → test → review → improve → review cycle.
 
-Use subagents for independent exploration where useful. Do not make implementation changes until the exploration is complete.
+Use subagents for independent exploration when it materially improves speed, quality, or independent verification; avoid duplicate parallel exploration that merely re-reads the same broad context. Do not make implementation changes until the exploration is complete.
 
 ## 2. Scope and isolation
 
@@ -199,7 +203,7 @@ Use independent subagents for implementation/data/storage and visual/responsive 
 2. a visual/responsive review across the required viewport/sidebar matrix;
 3. after fixes and affected re-tests, one tightly scoped final regression review by the main agent.
 
-Fix issues found by reviews and rerun affected tests.
+Fix issues found by reviews and rerun affected tests. Keep follow-up passes scoped to the changed or failing area when possible, but do not cap iterations while a justified material defect remains unresolved.
 
 Use local Git tracking/commits for substantial known-good work if permitted by the active local contract. Do not add/push a remote.
 
