@@ -42,14 +42,19 @@ CODEX_HA_WORKSPACE=/path/to/workspace \
 
 GNOME may require **Allow Launching** once for each launcher.
 
-The installer creates standard, **no approval**, and **yolo** launchers. The no-approval launcher retains `workspace-write` isolation but pins:
+The installer creates standard, **no approval**, and **yolo** launchers. All three apply the HA-specific context controls:
 
 ```text
-sandbox_workspace_write.network_access=true
+model_auto_compact_token_limit=110000
+model_auto_compact_token_limit_scope="total"
+tool_output_token_limit=4000
+agents.max_concurrent_threads_per_session=3
 mcp_servers.playwright.default_tools_approval_mode=approve
 ```
 
-The first setting lets `ha-sync` create its HTTPS connection. The second suppresses ordinary Playwright MCP tool prompts, including for tools added by a later Playwright MCP release, unless managed requirements or a stronger tool policy take precedence. The yolo launcher uses `--dangerously-bypass-approvals-and-sandbox`; use it only when the VM is an adequate external sandbox.
+The shared thread limit includes the root thread, so `3` allows the existing maximum of two concurrent subagents. The no-approval launcher additionally retains `workspace-write` isolation and pins `sandbox_workspace_write.network_access=true` so `ha-sync` can use HTTPS. The yolo launcher uses `--dangerously-bypass-approvals-and-sandbox`; use it only when the VM is an adequate external sandbox.
+
+The token controls reduce retained tool-output/context replay; they do not remove the validation, visual QA, reviewer/improve/re-test, or final regression requirements in `AGENTS.md`.
 
 ## Headed Playwright MCP
 
@@ -100,20 +105,21 @@ Then merge the following into `~/.codex/config.toml`:
 [mcp_servers.playwright]
 url = "http://localhost:8931/mcp"
 default_tools_approval_mode = "approve"
+disabled_tools = ["browser_run_code_unsafe"]
 ```
 
 Use `localhost`, not `127.0.0.1`.
 
 ## Reproducible Playwright version
 
-The installer defaults to `@playwright/mcp@latest` for convenience. For reproducibility, pin a version:
+The installer intentionally defaults to the project-pinned `@playwright/mcp@0.0.80` so browser tool schemas and output behavior do not change between runs without review. To deliberately test another version:
 
 ```bash
 PLAYWRIGHT_MCP_PACKAGE='@playwright/mcp@<VERSION>' \
   client/install-playwright-service.sh
 ```
 
-Record the chosen version in your private deployment notes, not in the public template unless it is intentionally the project-wide default.
+Update the project-wide pin only after validating the newer release; deployment-specific experiments can remain in private notes.
 
 ## Safe smoke test
 
