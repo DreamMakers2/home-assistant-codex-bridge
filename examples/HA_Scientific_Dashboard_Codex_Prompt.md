@@ -8,12 +8,16 @@ Read that repository’s `CODEX_REFERENCE.md` and the local workspace `AGENTS.md
 
 ## Operating mode and autonomy
 
-- Explicitly use subagents whenever independent work can be parallelized or a second opinion can improve quality. Appropriate delegation includes environment exploration, individual API/source verification, data architecture, Home Assistant integration checks, browser/visual testing, and independent code/config review.
+- Use subagents when independent work materially improves speed, quality, or independent verification. Appropriate delegation includes individual API/source verification, data architecture, Home Assistant integration checks, browser/visual testing, and independent code/config review; do not create duplicate parallel exploration merely to reread the same broad context.
 - If Codex CLI supports Plan mode, use it first for the exploration and implementation plan. After the plan is complete, if the CLI exposes an explicit Goal/Follow-a-goal mode, switch to it and use the Definition of Done below as the durable goal. If no such Goal mode exists, continue in the normal autonomous execution mode. Do not stop after planning.
 - Execute the full cycle autonomously: **explore → plan → implement → validate/test → review → improve → re-test → final main-agent review**.
 - Do not ask me routine implementation questions or request confirmations. Infer reasonable choices from the environment and this brief.
 - If an unavoidable external prerequisite or permission boundary blocks one part of the project, do not bypass the boundary and do not fabricate success. Continue all unblocked work, adapt where safely possible, and report the exact blocker and smallest manual prerequisite at the end.
 - Keep this a hobby project: avoid production-scale error-handling frameworks, elaborate auth schemes, excessive abstractions, or infrastructure that is not needed for this dashboard.
+
+### Context-efficiency requirement
+
+Preserve the complete quality-assurance and reviewer/improve/re-test structure below. Token efficiency does **not** authorize skipping required source verification, functional tests, the full viewport/sidebar matrix, independent technical/visual reviews, justified fixes, affected re-tests, or the final main-agent regression review. Reduce context growth around those gates instead: use targeted/bounded searches and excerpts rather than broad dumps; filter or summarize large command/API/log/diff output locally; save bulky evidence to temporary files and retrieve only relevant slices; avoid rereading unchanged material; and for Playwright prefer targeted element lookup, compact evaluations and decisive screenshots over repeated full accessibility snapshots or broad console/network histories.
 
 ## Mandatory exploration run before planning
 
